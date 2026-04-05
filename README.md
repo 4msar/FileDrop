@@ -29,18 +29,7 @@ npm run build
 
 ## Deploy to Cloudflare Pages
 
-### Option A — GitHub Actions (automated)
-
-1. Push this repo to GitHub
-2. In Cloudflare Dashboard → Pages → Create Project → connect your repo
-3. Add these secrets to your GitHub repo (`Settings → Secrets → Actions`):
-   - `CLOUDFLARE_API_TOKEN` — create at https://dash.cloudflare.com/profile/api-tokens  
-     (use "Edit Cloudflare Workers" template, scoped to your account)
-   - `CLOUDFLARE_ACCOUNT_ID` — found in Cloudflare Dashboard sidebar
-4. In `.github/workflows/deploy.yml` set `projectName` to your CF Pages project name
-5. Push to `main` → auto deploys
-
-### Option B — Manual drag & drop
+### Manual drag & drop
 
 ```bash
 npm run build
