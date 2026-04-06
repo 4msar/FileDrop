@@ -1,4 +1,5 @@
 // worker/index.js — Cloudflare Worker signaling server
+// Groups peers by public IP (same network = same public IP = same room)
 
 export class Room {
   constructor(state) {
@@ -20,10 +21,10 @@ export class Room {
     const [client, server] = Object.values(new WebSocketPair())
     server.accept()
 
-    // Tell everyone else this peer joined
+    // Tell everyone else in this room that a new peer joined
     this._broadcast({ type: 'PEER_JOINED', peerId }, peerId)
 
-    // Send new peer the list of everyone already here
+    // Send new peer the list of everyone already in this room
     const peerList = [...this.peers.keys()]
     server.send(JSON.stringify({ type: 'PEER_LIST', peers: peerList }))
 
@@ -66,7 +67,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
 
-    // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -78,12 +78,25 @@ export default {
     }
 
     if (url.pathname === '/signal') {
-      // All peers join the same room (can extend to multi-room via URL later)
-      const roomId = url.searchParams.get('room') || 'default'
+      // Group by public IP — Cloudflare provides this header automatically
+      // Everyone behind the same router shares the same public IP → same room
+      const publicIp = request.headers.get('CF-Connecting-IP') || 'default'
+
+      // Allow manual room override via URL hash (for cross-network sharing)
+      const roomParam = url.searchParams.get('room')
+      const roomId = (roomParam && roomParam !== 'filedrop-default-room')
+        ? roomParam
+        : publicIp
+
+      console.log(`peer joining room: ${roomId} (ip: ${publicIp})`)
+
       const roomObj = env.ROOMS.get(env.ROOMS.idFromName(roomId))
       return roomObj.fetch(request)
     }
 
-    return new Response('FileDrop Signaling Server', { status: 200 })
+    return new Response('FileDrop Signaling Server', {
+      status: 200,
+      headers: { 'Content-Type': 'text/plain' }
+    })
   }
 }
