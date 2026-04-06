@@ -1,16 +1,17 @@
 {
-  "name": "fileshare",
+  "name": "filedrop",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev:frontend": "vite frontend",
+    "dev:worker": "wrangler dev worker/index.js --local --ip 0.0.0.0 --port 8787",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:worker\"",
+    "build": "vite build frontend",
+    "deploy:worker": "wrangler deploy worker/index.js",
+    "deploy": "npm run build && npm run deploy:worker"
   },
   "devDependencies": {
-    "vite": "^5.0.0"
-  },
-  "dependencies": {
-    "peerjs": "^1.5.4"
+    "vite": "^5.0.0",
+    "concurrently": "^8.0.0"
   }
 }

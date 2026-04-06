@@ -49,6 +49,8 @@ header {
 .header-right {
   font-size: 13px;
   color: var(--muted);
+  display: flex;
+  gap: 10px;
 }
 
 .my-id-label code {
@@ -159,6 +161,8 @@ main {
   color: #fff;
   width: 58px;
   height: 58px;
+  display: flex;
+  flex-direction: column;
 }
 
 .you {
@@ -169,7 +173,7 @@ main {
 }
 
 .you span {
-  color: var(--text);
+  color: var(--bg);
   font-weight: 500;
 }
 
@@ -183,42 +187,6 @@ main {
   text-align: center;
   min-height: 20px;
 }
-
-/* ── Connect bar ── */
-.connect-bar {
-  display: flex;
-  gap: 8px;
-  width: 340px;
-}
-
-.connect-bar input {
-  flex: 1;
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  outline: none;
-  transition: border-color 0.15s;
-}
-.connect-bar input:focus { border-color: var(--accent); }
-.connect-bar input::placeholder { color: var(--muted); }
-
-.connect-bar button {
-  font-family: var(--font);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.connect-bar button:hover { opacity: 0.85; }
 
 /* ── Modal ── */
 .modal {
@@ -403,5 +371,4 @@ main {
   .ring-2 { width: 200px; height: 200px; }
   .ring-3 { width: 300px; height: 300px; }
   .radar-pulse { width: 300px; height: 300px; }
-  .connect-bar { width: 90vw; }
 }

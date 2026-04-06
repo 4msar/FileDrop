@@ -22,9 +22,12 @@
       </svg>
       <span>FileDrop</span>
     </div>
-    <div class="header-right">
-      <span class="my-id-label">Your ID: <code id="my-peer-id">—</code></span>
-    </div>
+    <section class="header-right">
+      <p class="my-id-label">Your ID:</p> 
+      <span class="my-id-label">
+        <code id="my-peer-id">—</code>
+      </span>
+    </section>
   </header>
 
   <main>
@@ -40,8 +43,8 @@
       <div class="node you" id="you-node">
         <div class="avatar you-avatar">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <span>You</span>
         </div>
-        <span>You</span>
       </div>
 
       <!-- Peers get injected here by JS -->
@@ -51,12 +54,6 @@
     <!-- State messages -->
     <div id="status-msg" class="status-msg">
       Waiting for peers on your network…
-    </div>
-
-    <!-- Connect manually -->
-    <div class="connect-bar">
-      <input id="peer-id-input" type="text" placeholder="Paste a peer ID to connect…" autocomplete="off" spellcheck="false" />
-      <button id="connect-btn">Connect</button>
     </div>
   </main>
 

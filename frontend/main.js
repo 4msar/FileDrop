@@ -6,8 +6,6 @@ import { FileSharePeer } from './peer.js'
 const myPeerIdEl      = document.getElementById('my-peer-id')
 const statusMsg       = document.getElementById('status-msg')
 const peersContainer  = document.getElementById('peers-container')
-const peerIdInput     = document.getElementById('peer-id-input')
-const connectBtn      = document.getElementById('connect-btn')
 
 // Send modal
 const sendModal       = document.getElementById('send-modal')
@@ -191,18 +189,6 @@ acceptBtn.addEventListener('click', () => {
 declineBtn.addEventListener('click', () => {
   fsp.declineFile()
   hideReceiveToast()
-})
-
-// ── Connect manually (fallback) ──
-connectBtn.addEventListener('click', () => {
-  const id = peerIdInput.value.trim()
-  if (!id) return
-  fsp.peer.connect(id, { reliable: true })
-  peerIdInput.value = ''
-})
-
-peerIdInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') connectBtn.click()
 })
 
 // ── Helpers ──
