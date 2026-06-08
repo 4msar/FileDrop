@@ -3,8 +3,8 @@
 const CHUNK_SIZE = 64 * 1024
 const DEFAULT_ROOM = 'filedrop-default-room'
 const SIGNAL_URL = import.meta.env.DEV
-  ? `ws://${location.hostname}:8787/signal`
-  : 'wss://filedrop-signaling.abdullah21673.workers.dev/signal'
+    ? `ws://${location.hostname}:8787/signal`
+    : `wss://${location.hostname}/signal`;
 
 function getRoomId() {
   return window.location.hash.replace('#', '').trim() || DEFAULT_ROOM
