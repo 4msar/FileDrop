@@ -144,9 +144,18 @@ fileInput.addEventListener('change', () => {
 // Remove the redundant label click handler that was causing double open.
 // The <label> in HTML wraps <input type="file"> so it already triggers it natively.
 
-sendBtn.addEventListener('click', () => {
+async function attemptSend() {
   const file = fileInput.files[0]
   if (!file || !activePeerId) return
+
+  if (!fsp.isPeerReady(activePeerId)) {
+    setStatus('Reconnecting…')
+    await new Promise(r => setTimeout(r, 1500))
+    if (!fsp.isPeerReady(activePeerId)) {
+      setStatus('Connection lost — close and reopen the send dialog')
+      return
+    }
+  }
 
   sendBtn.disabled = true
   cancelBtn.disabled = true
@@ -165,9 +174,18 @@ sendBtn.addEventListener('click', () => {
     })
   } catch (err) {
     setStatus('Send failed: ' + err.message)
-    closeSendModal()
+    sendBtn.disabled = false
     cancelBtn.disabled = false
+    progressWrap.classList.add('hidden')
   }
+}
+
+sendBtn.addEventListener('click', attemptSend)
+
+// Re-enable send when returning from mobile file picker (connection may be recovering)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !activePeerId) return
+  if (fileInput.files[0]) sendBtn.disabled = false
 })
 
 // ── Receive toast ──

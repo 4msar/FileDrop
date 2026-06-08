@@ -1,6 +1,6 @@
 name = "file-drop"
 main = "worker/index.js"
-compatibility_date = "2026-06-08"
+compatibility_date = "2025-07-18"
 
 [assets]
 directory = "./dist"

@@ -88,7 +88,7 @@ export default {
         ? roomParam
         : publicIp
 
-      console.log(`peer joining room: ${roomId} (ip: ${publicIp})`)
+      console.log(`peer joining room: ${roomId} [${roomParam}] (ip: ${publicIp})`)
 
       const roomObj = env.ROOMS.get(env.ROOMS.idFromName(roomId))
       return roomObj.fetch(request)

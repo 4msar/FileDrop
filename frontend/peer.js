@@ -2,7 +2,10 @@
 
 const CHUNK_SIZE = 64 * 1024
 const DEFAULT_ROOM = 'filedrop-default-room'
-const SIGNAL_URL = import.meta.env.DEV
+
+const isLocal = true;
+
+const SIGNAL_URL = isLocal
     ? `ws://${location.hostname}:8787/signal`
     : `wss://${location.hostname}/signal`;
 
@@ -36,8 +39,17 @@ export class FileSharePeer {
     this.ws              = null
     this.peerConns       = new Map()  // peerId → { pc, iceCandidateQueue, remoteDescSet }
     this.dataChannels    = new Map()
-    this.pendingReceive  = null
-    this._receiveBuffers = new Map()
+    this.pendingReceive      = null
+    this._receiveBuffers     = new Map()
+    this._disconnectTimers   = new Map()
+    this._reconnectingPeers  = new Set()
+    this._heartbeatInterval  = null
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') this._onPageVisible()
+      })
+    }
 
     this._connect()
   }
@@ -50,6 +62,7 @@ export class FileSharePeer {
 
     this.ws.onopen = () => {
       console.log('[signal] connected')
+      this._startHeartbeat()
       this.onReady(this.myId)
     }
 
@@ -90,6 +103,7 @@ export class FileSharePeer {
 
     this.ws.onclose = (e) => {
       console.log('[signal] closed', e.code, e.reason)
+      this._stopHeartbeat()
       setTimeout(() => this._connect(), 2000)
     }
 
@@ -101,6 +115,78 @@ export class FileSharePeer {
   _signal(to, msg) {
     if (this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify({ ...msg, to }))
+    }
+  }
+
+  _startHeartbeat() {
+    this._stopHeartbeat()
+    this._heartbeatInterval = setInterval(() => {
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({ type: 'ping' }))
+      }
+    }, 25000)
+  }
+
+  _stopHeartbeat() {
+    if (this._heartbeatInterval) {
+      clearInterval(this._heartbeatInterval)
+      this._heartbeatInterval = null
+    }
+  }
+
+  _onPageVisible() {
+    if (this.ws?.readyState !== WebSocket.OPEN) {
+      this._connect()
+      return
+    }
+
+    for (const [peerId, entry] of this.peerConns) {
+      const state = entry.pc.connectionState
+      const dc = this.dataChannels.get(peerId)
+      const dcOpen = dc?.readyState === 'open'
+
+      if (state === 'disconnected' || state === 'failed' || (state === 'connected' && !dcOpen)) {
+        this._reconnectPeer(peerId)
+      }
+    }
+  }
+
+  _clearDisconnectTimer(peerId) {
+    const timer = this._disconnectTimers.get(peerId)
+    if (timer) {
+      clearTimeout(timer)
+      this._disconnectTimers.delete(peerId)
+    }
+  }
+
+  _schedulePeerRemoval(peerId, delay) {
+    this._clearDisconnectTimer(peerId)
+    const timer = setTimeout(() => {
+      const entry = this.peerConns.get(peerId)
+      if (!entry) return
+      const state = entry.pc.connectionState
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        this._removePeer(peerId)
+      }
+    }, delay)
+    this._disconnectTimers.set(peerId, timer)
+  }
+
+  async _reconnectPeer(peerId) {
+    if (this._reconnectingPeers.has(peerId)) return
+    this._reconnectingPeers.add(peerId)
+
+    try {
+      console.log('[rtc] reconnecting to', peerId)
+      const entry = this.peerConns.get(peerId)
+      if (entry) {
+        entry.pc.close()
+        this.peerConns.delete(peerId)
+        this.dataChannels.delete(peerId)
+      }
+      await this._createOffer(peerId)
+    } finally {
+      this._reconnectingPeers.delete(peerId)
     }
   }
 
@@ -122,16 +208,22 @@ export class FileSharePeer {
       }
     }
 
-    pc.onconnectionstatechange = () => {      
+    pc.onconnectionstatechange = () => {
       console.log('[rtc] connection state with', peerId, ':', pc.connectionState)
       if (pc.connectionState === 'connected') {
+        this._clearDisconnectTimer(peerId)
         this.onPeerJoin(peerId)
       }
       if (pc.connectionState === 'failed') {
         console.log('[rtc] failed with', peerId)
-        this._removePeer(peerId)
+        // Brief delay — mobile file picker can cause transient failures
+        this._schedulePeerRemoval(peerId, 5000)
       }
       if (pc.connectionState === 'disconnected') {
+        // Don't remove immediately — page backgrounding (file picker) causes this
+        this._schedulePeerRemoval(peerId, 30000)
+      }
+      if (pc.connectionState === 'closed') {
         this._removePeer(peerId)
       }
     }
@@ -148,6 +240,16 @@ export class FileSharePeer {
   }
 
   async _createOffer(peerId) {
+    const existing = this.peerConns.get(peerId)
+    if (existing) {
+      const state = existing.pc.connectionState
+      const dc = this.dataChannels.get(peerId)
+      if (state === 'connected' && dc?.readyState === 'open') return
+      existing.pc.close()
+      this.peerConns.delete(peerId)
+      this.dataChannels.delete(peerId)
+    }
+
     const { pc } = this._createPC(peerId)
 
     const dc = pc.createDataChannel('filedrop', { ordered: true })
@@ -242,9 +344,17 @@ export class FileSharePeer {
 
   // ── File transfer ──
 
+  isPeerReady(peerId) {
+    const entry = this.peerConns.get(peerId)
+    const dc = this.dataChannels.get(peerId)
+    return entry?.pc.connectionState === 'connected' && dc?.readyState === 'open'
+  }
+
   sendFile(peerId, file, onProgress) {
     const dc = this.dataChannels.get(peerId)
-    if (!dc || dc.readyState !== 'open') throw new Error('Not connected')
+    if (!dc || dc.readyState !== 'open') {
+      throw new Error('Connection lost — wait a moment and try again')
+    }
 
     dc.send(JSON.stringify({ type: 'FILE_OFFER', name: file.name, size: file.size, mime: file.type }))
 
@@ -343,6 +453,7 @@ export class FileSharePeer {
   }
 
   _removePeer(peerId) {
+    this._clearDisconnectTimer(peerId)
     const entry = this.peerConns.get(peerId)
     if (entry) entry.pc.close()
     this.peerConns.delete(peerId)
