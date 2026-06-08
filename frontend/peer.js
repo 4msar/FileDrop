@@ -3,7 +3,7 @@
 const CHUNK_SIZE = 64 * 1024
 const DEFAULT_ROOM = 'filedrop-default-room'
 
-const isLocal = true;
+const isLocal = window.location.href.startsWith('http://');
 
 const SIGNAL_URL = isLocal
     ? `ws://${location.hostname}:8787/signal`
