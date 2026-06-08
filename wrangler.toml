@@ -1,4 +1,4 @@
-name = "filedrop-signaling"
+name = "file-drop"
 main = "worker/index.js"
 compatibility_date = "2024-01-01"
 
@@ -10,3 +10,10 @@ bindings = [
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+[observability.logs]
+enabled = false
+invocation_logs = true
+
+[observability.traces]
+enabled = false
