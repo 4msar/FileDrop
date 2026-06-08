@@ -94,9 +94,7 @@ export default {
       return roomObj.fetch(request)
     }
 
-    return new Response('FileDrop Signaling Server', {
-      status: 200,
-      headers: { 'Content-Type': 'text/plain' }
-    })
+    // Fall through to static assets for any unmatched routes
+    return env.ASSETS.fetch(request)
   }
 }

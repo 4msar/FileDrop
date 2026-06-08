@@ -3,4 +3,5 @@ dist/
 .DS_Store
 *.local
 package-lock.json
+yarn.lock
 .wrangler
