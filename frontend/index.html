@@ -1,29 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FileDrop — P2P File Transfer</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
 
+<body>
   <header>
     <div class="logo">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <circle cx="11" cy="11" r="10" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M6 11 Q11 5 16 11 Q11 17 6 11Z" fill="currentColor" opacity="0.15"/>
-        <circle cx="11" cy="11" r="3" fill="currentColor"/>
-        <path d="M4 8a9 9 0 0114 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <path d="M2 11a11 11 0 0118 0" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <circle cx="11" cy="11" r="10" stroke="currentColor" stroke-width="1.5" />
+        <path d="M6 11 Q11 5 16 11 Q11 17 6 11Z" fill="currentColor" opacity="0.15" />
+        <circle cx="11" cy="11" r="3" fill="currentColor" />
+        <path d="M4 8a9 9 0 0114 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" />
+        <path d="M2 11a11 11 0 0118 0" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"
+          opacity="0.5" />
       </svg>
       <span>FileDrop</span>
     </div>
     <section class="header-right">
-      <p class="my-id-label">Your ID:</p> 
+      <p class="my-id-label">Your ID:</p>
       <span class="my-id-label">
         <code id="my-peer-id">—</code>
       </span>
@@ -42,7 +46,11 @@
       <!-- You node always in center -->
       <div class="node you" id="you-node">
         <div class="avatar you-avatar">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="currentColor"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" fill="currentColor" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" fill="none"
+              stroke-linecap="round" />
+          </svg>
           <span>You</span>
         </div>
       </div>
@@ -63,9 +71,12 @@
       <div class="modal-peer-name" id="modal-peer-name">Peer</div>
       <p class="modal-hint">Choose a file to send</p>
       <label class="file-pick-label" id="file-pick-label">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 5v14M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
         <span id="file-name-display">Select file</span>
-        <input type="file" id="file-input" style="display:none" />
+        <input type="file" id="file-input" style="display: none" />
       </label>
       <div class="modal-actions">
         <button id="send-btn" class="btn-primary" disabled>Send</button>
@@ -92,6 +103,25 @@
     </div>
   </div>
 
+  <!-- Change ID modal -->
+  <div id="change-id-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-peer-name">Change your ID</div>
+      <p class="modal-hint">
+        Enter a custom ID (lowercase letters, numbers, hyphens only)
+      </p>
+      <input type="text" id="new-id-input" class="text-input" placeholder="e.g. my-custom-id-123" />
+      <div id="id-error" class="id-error hidden">
+        Use only lowercase letters, numbers, and hyphens.
+      </div>
+      <div class="modal-actions">
+        <button id="change-id-btn" class="btn-primary">Save</button>
+        <button id="cancel-change-id-btn" class="btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="/main.js"></script>
 </body>
+
 </html>
